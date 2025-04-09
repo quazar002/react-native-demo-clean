@@ -15,62 +15,56 @@ import { BlurView } from 'expo-blur';
 import Logo from '../assets/logo.svg'; // Make sure the logo exists or replace
 import * as Haptics from 'expo-haptics';
 import CustomDropdown from './CustomDropdown';
+import * as FileSystem from 'expo-file-system'; 
 
 const MAX_IMAGES = 3;
 
 // Call company API one image at a time
 async function analyzeImages(images) {
-  const results = [];
+  const formData = new FormData();
 
-  for (let i = 0; i < images.length; i++) {
-    const formData = new FormData();
-    formData.append('image_file', {
-      uri: images[i],
-      type: 'image/jpeg',
-      name: `image_${i}.jpg`,
+  // Preprocess the image if needed (e.g., resize)
+  formData.append("image_file", {
+    uri: images[0],
+    type: "image/jpeg",
+    name: "image.jpg",
+  });
+
+  try {
+    console.log("Sending FormData:", [...formData]); // Debugging
+
+    const response = await fetch("https://api.quazar.co.kr/api/b2b/classify", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+      },
+      body: formData,
     });
 
-    try {
-      const response = await fetch('http://api.quazar.co.kr/api/ai/object_detection', {
-        method: 'POST',
-        headers: {
-          accept: 'application/json',
-          'Content-Type': 'multipart/form-data',
-        },
-        body: formData,
-      });
+    const responseText = await response.text(); // Log full response
+    console.log("API Response:", responseText);
 
-      if (response.ok) {
-        const result = await response.json();
-        const detectedKey = Object.keys(result.detected_object)[0];
+    if (response.ok) {
+      const result = JSON.parse(responseText); // Parse JSON response
+      console.log("✅ API result:", result);
 
-        results.push({
-          uri: images[i],
-          category: detectedKey,
-          bbox: result.detected_object[detectedKey]?.bbox || [],
-        });
-
-        // If any image is fake, return early
-        if (detectedKey === 'fake') {
-          return {
-            is_fake: true,
-            details: results,
-          };
-        }
-      } else {
-        console.error(`AI API 오류 (이미지 ${i}):`, response.status);
-      }
-    } catch (error) {
-      console.error(`AI 분석 중 에러 발생 (이미지 ${i}):`, error);
+      return {
+        is_fake: result.result === "Fake",
+        label: result.result,
+        full: result,
+      };
+    } else {
+      console.error("❌ Server error:", response.status, responseText);
+      alert("Server Error: " + responseText);
+      return null;
     }
+  } catch (error) {
+    console.error("❌ Network error:", error);
+    alert("Network Error: " + error.message);
+    return null;
   }
-
-  // If all images passed
-  return {
-    is_fake: false,
-    details: results,
-  };
 }
+
 
 
 export default function UploadScreen({ navigation }) {
