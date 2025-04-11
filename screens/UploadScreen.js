@@ -23,47 +23,50 @@ const MAX_IMAGES = 3;
 async function analyzeImages(images) {
   const formData = new FormData();
 
-  // Preprocess the image if needed (e.g., resize)
-  formData.append("image_file", {
-    uri: images[0],
-    type: "image/jpeg",
-    name: "image.jpg",
+  images.forEach((uri, idx) => {
+    const filename = uri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename ?? '');
+    const ext = match?.[1]?.toLowerCase();
+    const type = ext === 'png' ? 'image/png' : 'image/jpeg';
+
+    const fileObj = {
+      uri,
+      name: filename || `image_${idx}.jpg`,
+      type,
+    };
+
+    console.log(`📤 Appending image ${idx + 1}:`, fileObj);
+    formData.append('image_files', fileObj);
   });
 
   try {
-    console.log("Sending FormData:", [...formData]); // Debugging
-
     const response = await fetch("https://api.quazar.co.kr/api/b2b/classify", {
       method: "POST",
       headers: {
         accept: "application/json",
+        // ❌ Do NOT manually set Content-Type
       },
       body: formData,
     });
 
-    const responseText = await response.text(); // Log full response
-    console.log("API Response:", responseText);
+    const text = await response.text();
+    const result = JSON.parse(text); // ✅ FIXED: declare result before logging it
+    console.log("📦 Raw Response:", text);
+    console.log("📦 Full API response:", result);
 
-    if (response.ok) {
-      const result = JSON.parse(responseText); // Parse JSON response
-      console.log("✅ API result:", result);
-
-      return {
-        is_fake: result.result === "Fake",
-        label: result.result,
-        full: result,
-      };
-    } else {
-      console.error("❌ Server error:", response.status, responseText);
-      alert("Server Error: " + responseText);
-      return null;
-    }
+    return {
+      is_fake: result.result === "Fake",
+      label: result.result,
+      full: result,
+    };
   } catch (error) {
     console.error("❌ Network error:", error);
     alert("Network Error: " + error.message);
     return null;
   }
 }
+
+
 
 
 
