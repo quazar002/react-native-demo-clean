@@ -1,149 +1,234 @@
-// DashboardScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   StyleSheet,
   Image,
+  Pressable,
 } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
+import QuazarLogo from '../assets/QUAZAR.svg'; // your logo SVG
+// If you're using PNG instead: import QuazarLogo from '../assets/logo.png'
+
+const image1 = require('../assets/images/image1.jpg');
+const image2 = require('../assets/images/image2.jpg');
+const image3 = require('../assets/images/image3.jpeg');
+const image4 = require('../assets/images/image4.jpg');
 
 const filters = ['12 Months', '6 Months', '30 Days', '7 Days'];
 
 const mockItems = [
-  {
-    id: '002',
-    seller: '위탁판매자 002',
-    productName: '루이비통 알마 BB',
-    date: '2025.03.06',
-    status: 'risky',
-    image: 'https://via.placeholder.com/50',
-  },
   {
     id: '001',
     seller: '위탁판매자 001',
     productName: '루이비통 알마 BB',
     date: '2025.03.06',
     status: 'normal',
-    image: 'https://via.placeholder.com/50',
+    image: image1,
+  },
+  {
+    id: '002',
+    seller: '위탁판매자 002',
+    productName: '구찌 마몬트 미니',
+    date: '2025.03.06',
+    status: 'risky',
+    image: image2,
+  },
+  {
+    id: '003',
+    seller: '위탁판매자 003',
+    productName: '샤넬 클래식 플랩 백',
+    date: '2025.03.06',
+    status: 'normal',
+    image: image3,
+  },
+  {
+    id: '004',
+    seller: '위탁판매자 004',
+    productName: '프라다 사피아노 지갑',
+    date: '2025.03.06',
+    status: 'risky',
+    image: image4,
   },
 ];
 
+const mockChartData = {
+  '12 Months': {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+    datasets: [
+      { data: [4, 5, 6, 4, 5, 6, 7, 8], color: () => '#008CFF' },
+      { data: [2, 3, 2, 2, 3, 2, 3, 2], color: () => '#FF2121' },
+    ],
+  },
+  '6 Months': {
+    labels: ['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+    datasets: [
+      { data: [4, 5, 6, 4, 5, 6], color: () => '#008CFF' },
+      { data: [2, 3, 2, 2, 3, 2], color: () => '#FF2121' },
+    ],
+  },
+  '30 Days': {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [
+      { data: [4, 5, 6, 7], color: () => '#008CFF' },
+      { data: [2, 3, 2, 3], color: () => '#FF2121' },
+    ],
+  },
+  '7 Days': {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [
+      { data: [4, 5, 6, 4, 5, 6, 7], color: () => '#008CFF' },
+      { data: [2, 3, 2, 2, 3, 2, 3], color: () => '#FF2121' },
+    ],
+  },
+};
+
 export default function DashboardScreen() {
   const [selectedFilter, setSelectedFilter] = useState('12 Months');
+  const [chartData, setChartData] = useState(mockChartData['12 Months']);
+  const [liveItems, setLiveItems] = useState(mockItems);
+
+  useEffect(() => {
+    const fetchedChartData = mockChartData[selectedFilter] || mockChartData['12 Months'];
+    setChartData(fetchedChartData);
+  }, [selectedFilter]);
+
+  const handleApprove = (id) => {
+    setLiveItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleReject = (id) => {
+    setLiveItems((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <Text style={styles.title}>QUAZAR</Text>
-
-      {/* Filter Buttons */}
-      <View style={styles.filterRow}>
-        {filters.map(filter => (
-          <TouchableOpacity
-            key={filter}
-            style={[
-              styles.filterButton,
-              selectedFilter === filter && styles.activeFilterButton,
-            ]}
-            onPress={() => setSelectedFilter(filter)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                selectedFilter === filter && styles.activeFilterText,
-              ]}
-            >
-              {filter}
-            </Text>
-          </TouchableOpacity>
-        ))}
+    <View style={{ flex: 1 }}>
+      {/* Fixed Logo Header */}
+      <View style={styles.fixedHeader}>
+        <QuazarLogo width={120} height={40} />
       </View>
 
-      {/* Chart Placeholder */}
-      <View style={styles.chartBox}>
-        <Text style={{ color: '#aaa' }}>[ Chart Placeholder ]</Text>
-      </View>
-
-      {/* Live Items Section */}
-      <Text style={styles.sectionTitle}>실시간 위탁판매 등록</Text>
-      <Text style={styles.sectionSubtitle}>
-        Lorem ipsum dolor sit ametis.
-      </Text>
-
-      {/* Item Cards */}
-      {mockItems.map(item => (
-        <View key={item.id} style={styles.card}>
-          <View style={styles.leftSection}>
-            <Image source={{ uri: item.image }} style={styles.avatar} />
-            <View>
-              <Text style={styles.seller}>{item.seller}</Text>
-              <Text style={styles.productName}>{item.productName}</Text>
-              <Text style={styles.date}>{item.date}</Text>
-            </View>
-          </View>
-
-          <View style={styles.rightSection}>
-            <Text
+      {/* Scrollable Content */}
+      <ScrollView style={styles.scrollArea}>
+        {/* Filter Buttons */}
+        <View style={styles.filterRow}>
+          {filters.map((filter) => (
+            <Pressable
+              key={filter}
               style={[
-                styles.statusTag,
-                item.status === 'risky' ? styles.risky : styles.normal,
+                styles.filterButton,
+                selectedFilter === filter && styles.activeFilterButton,
               ]}
+              onPress={() => setSelectedFilter(filter)}
             >
-              {item.status === 'risky' ? '위험 감지' : '정상 감지'}
-            </Text>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
+              <Text
                 style={[
-                  styles.approveButton,
-                  item.status === 'risky' ? styles.outlined : styles.filled,
+                  styles.filterText,
+                  selectedFilter === filter && styles.activeFilterText,
                 ]}
               >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    item.status === 'risky' ? styles.blackText : styles.whiteText,
-                  ]}
-                >
-                  승인
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.rejectButton,
-                  item.status === 'risky'
-                    ? styles.filledRed
-                    : styles.outlined,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    item.status === 'risky' ? styles.whiteText : styles.blackText,
-                  ]}
-                >
-                  거부
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                {filter}
+              </Text>
+            </Pressable>
+          ))}
         </View>
-      ))}
-    </ScrollView>
+
+        {/* Chart */}
+        <View style={styles.chartBox}>
+          <LineChart
+            data={chartData}
+            width={350}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#fff',
+              backgroundGradientFrom: '#fff',
+              backgroundGradientTo: '#fff',
+              color: () => '#888',
+              labelColor: () => '#888',
+              propsForDots: {
+                r: '4',
+                strokeWidth: '2',
+                stroke: '#fff',
+              },
+            }}
+            bezier
+            style={{ borderRadius: 16 }}
+          />
+        </View>
+
+        <Text style={styles.sectionTitle}>실시간 위탁판매 등록</Text>
+        <Text style={styles.sectionSubtitle}>Lorem ipsum dolor sit ametis.</Text>
+
+        {/* Item Cards */}
+        {liveItems.map((item) => (
+          <View key={item.id} style={styles.card}>
+            <View style={styles.cardTop}>
+              <Image source={item.image} style={styles.avatar} />
+              <View style={styles.cardBody}>
+                <Text style={styles.seller}>{item.seller}</Text>
+                <Text style={styles.productName}>상품명: {item.productName}</Text>
+              </View>
+              <View style={styles.statusSection}>
+                <Text
+                  style={[
+                    styles.statusTag,
+                    item.status === 'risky' ? styles.risky : styles.normal,
+                  ]}
+                >
+                  {item.status === 'risky' ? '위험 감지' : '정상 감지'}
+                </Text>
+                <Text style={styles.date}>{item.date} (목)</Text>
+              </View>
+            </View>
+
+            <View style={styles.buttonRow}>
+              <Pressable
+                onPress={() => handleApprove(item.id)}
+                style={({ pressed }) => [
+                  styles.approveButton,
+                  pressed && styles.approvePressed,
+                ]}
+              >
+                {({ pressed }) => (
+                  <Text style={pressed ? styles.whiteText : styles.blackText}>승인</Text>
+                )}
+              </Pressable>
+              <Pressable
+                onPress={() => handleReject(item.id)}
+                style={({ pressed }) => [
+                  styles.rejectButton,
+                  pressed && styles.rejectPressed,
+                ]}
+              >
+                {({ pressed }) => (
+                  <Text style={pressed ? styles.whiteText : styles.blackText}>거부</Text>
+                )}
+              </Pressable>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 16,
+  fixedHeader: {
+    paddingTop: 50,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
     backgroundColor: '#fff',
+    zIndex: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1e3a8a',
-    marginBottom: 16,
+  scrollArea: {
+    flex: 1,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
   },
   filterRow: {
     flexDirection: 'row',
@@ -152,7 +237,7 @@ const styles = StyleSheet.create({
   filterButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ccc',
     marginRight: 8,
@@ -168,7 +253,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   chartBox: {
-    height: 180,
+    height: 220,
     backgroundColor: '#f0f0f0',
     borderRadius: 16,
     marginBottom: 24,
@@ -186,91 +271,107 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   card: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 12,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 16,
-    borderWidth: 1,
     borderColor: '#eee',
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
-  leftSection: {
+  cardTop: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
   avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#eee',
+    borderWidth: 1,
+    borderColor: '#e5e5e5',
     marginRight: 12,
   },
+  cardBody: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   seller: {
-    fontWeight: '600',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   productName: {
-    color: '#444',
     fontSize: 13,
+    color: '#444',
   },
-  date: {
-    fontSize: 11,
-    color: '#888',
-  },
-  rightSection: {
+  statusSection: {
     alignItems: 'flex-end',
-    justifyContent: 'space-between',
   },
   statusTag: {
     fontSize: 12,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 12,
+    borderRadius: 5,
     borderWidth: 1,
     fontWeight: '600',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   risky: {
-    borderColor: '#ef4444',
-    color: '#b91c1c',
+    borderColor: '#FF2121',
+    color: '#FF2121',
   },
   normal: {
-    borderColor: '#3b82f6',
-    color: '#2563eb',
+    borderColor: '#008CFF',
+    color: '#008CFF',
+  },
+  date: {
+    fontSize: 11,
+    color: '#888',
   },
   buttonRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   approveButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    marginRight: 6,
-  },
-  rejectButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-  },
-  filled: {
-    backgroundColor: '#2563eb',
-  },
-  filledRed: {
-    backgroundColor: '#ef4444',
-  },
-  outlined: {
-    backgroundColor: '#fff',
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  rejectButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  approvePressed: {
+    backgroundColor: '#008CFF',
+    borderColor: '#008CFF',
+  },
+  rejectPressed: {
+    backgroundColor: '#FF2121',
+    borderColor: '#FF2121',
   },
   whiteText: {
     color: '#fff',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   blackText: {
     color: '#000',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Image } from 'react-native';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import UploadScreen from '../screens/UploadScreen';
 import MessagesScreen from '../screens/MessagesScreen';
@@ -7,6 +7,7 @@ import NotificationsScreen from '../screens/NotificationsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import { Ionicons } from '@expo/vector-icons';
+import QuazarIcon from '../assets/quazarLogo.svg'
 
 const Tab = createBottomTabNavigator();
 
@@ -23,20 +24,20 @@ export default function AppNavigator() {
                   width: 50,
                   height: 50,
                   backgroundColor: '#133B7B',
-                  borderRadius: 10,
+                  borderRadius: 12,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: -8,
+                  marginBottom: -16,
                 }}
               >
-                <Image
-                  source={require('../assets/icons/quazarLogo.png')}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    resizeMode: 'contain',
-                  }}
-                />
+         <QuazarIcon
+  width={50}
+  height={50}
+  style={{
+    transform: [{ translateY: 2 }, { translateX: 3 }],
+  }}
+/>
+
               </View>
             );
           }

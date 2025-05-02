@@ -50,11 +50,11 @@ export default function ResultScreen({ route }) {
       </Text>
 
       <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate('Upload')}
-      >
-        <Text style={styles.backButtonText}>보류</Text>
-      </TouchableOpacity>
+  style={styles.backButton}
+  onPress={() => navigation.goBack()} // Use goBack() to return to the previous screen
+>
+  <Text style={styles.backButtonText}>보류</Text>
+</TouchableOpacity>
     </View>
   );
 }

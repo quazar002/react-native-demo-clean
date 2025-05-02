@@ -15,11 +15,10 @@ import { BlurView } from 'expo-blur';
 import Logo from '../assets/logo.svg'; // Make sure the logo exists or replace
 import * as Haptics from 'expo-haptics';
 import CustomDropdown from './CustomDropdown';
-import * as FileSystem from 'expo-file-system'; 
 
 const MAX_IMAGES = 3;
 
-// Call company API one image at a time
+// Call company API with all images at once
 async function analyzeImages(images) {
   const formData = new FormData();
 
@@ -29,46 +28,42 @@ async function analyzeImages(images) {
     const ext = match?.[1]?.toLowerCase();
     const type = ext === 'png' ? 'image/png' : 'image/jpeg';
 
-    const fileObj = {
+    formData.append('image_files', {
       uri,
       name: filename || `image_${idx}.jpg`,
       type,
-    };
-
-    console.log(`📤 Appending image ${idx + 1}:`, fileObj);
-    formData.append('image_files', fileObj);
+    });
   });
 
   try {
-    const response = await fetch("https://api.quazar.co.kr/api/b2b/classify", {
-      method: "POST",
+    const response = await fetch('https://api.quazar.co.kr/api/b2b/classify', {
+      method: 'POST',
       headers: {
-        accept: "application/json",
-        // ❌ Do NOT manually set Content-Type
+        'Content-Type': 'multipart/form-data',
+        Accept: 'application/json',
       },
       body: formData,
     });
 
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status}`);
+    }
+
     const text = await response.text();
-    const result = JSON.parse(text); // ✅ FIXED: declare result before logging it
-    console.log("📦 Raw Response:", text);
-    console.log("📦 Full API response:", result);
+    const result = JSON.parse(text);
+    console.log('📦 Full API response:', result);
 
     return {
-      is_fake: result.result === "Fake",
+      is_fake: result.result === 'Fake',
       label: result.result,
       full: result,
     };
   } catch (error) {
-    console.error("❌ Network error:", error);
-    alert("Network Error: " + error.message);
+    console.error('❌ Network error:', error);
+    alert(`Network Error: ${error.message}`);
     return null;
   }
 }
-
-
-
-
 
 export default function UploadScreen({ navigation }) {
   const [images, setImages] = useState([]);
@@ -256,28 +251,28 @@ export default function UploadScreen({ navigation }) {
 }
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 90,
-    paddingHorizontal: 20,
+    paddingTop: 60, // Reduced padding
+    paddingHorizontal: 15, // Reduced horizontal padding
     backgroundColor: '#f9f9f9',
   },
   sectionTitle: {
-    fontSize: 22,
+    fontSize: 20, // Reduced font size
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 10, // Reduced margin
   },
   imageRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15, // Reduced margin
   },
   imageWrapper: {
     position: 'relative',
-    marginRight: 12, // Added spacing between images
+    marginRight: 8, // Reduced spacing between images
   },
   imageBox: {
-    width: 100,
-    height: 100,
-    borderRadius: 8,
+    width: 80, // Reduced size
+    height: 80, // Reduced size
+    borderRadius: 6, // Reduced border radius
     backgroundColor: '#eee',
     justifyContent: 'center',
     alignItems: 'center',
@@ -287,81 +282,81 @@ const styles = StyleSheet.create({
     top: 4,
     right: 4,
     backgroundColor: '#000',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 20, // Reduced size
+    height: 20, // Reduced size
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
   },
   infoBox: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingVertical: 12,
-    marginBottom: 20,
+    borderRadius: 6, // Reduced border radius
+    paddingVertical: 10, // Reduced padding
+    marginBottom: 15, // Reduced margin
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: 12, // Reduced padding
+    paddingHorizontal: 15, // Reduced padding
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
   },
   left: {
     color: '#111',
-    fontSize: 18,
+    fontSize: 16, // Reduced font size
   },
   right: {
     color: '#666',
-    fontSize: 18,
+    fontSize: 16, // Reduced font size
   },
   input: {
     flex: 1,
     textAlign: 'right',
     color: '#333',
-    fontSize: 18,
+    fontSize: 16, // Reduced font size
   },
   recommendBox: {
     backgroundColor: '#fef6e8',
-    borderRadius: 8,
-    padding: 20,
-    marginBottom: 30,
+    borderRadius: 6, // Reduced border radius
+    padding: 15, // Reduced padding
+    marginBottom: 20, // Reduced margin
   },
   recommendTitle: {
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 6, // Reduced margin
     color: '#a67700',
-    fontSize: 20,
+    fontSize: 18, // Reduced font size
   },
   recommendText: {
-    marginBottom: 6,
+    marginBottom: 4, // Reduced margin
     color: '#333',
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 16, // Reduced font size
   },
   recommendBullet: {
-    fontSize: 16,
+    fontSize: 14, // Reduced font size
     color: '#555',
-    marginLeft: 10,
-    marginBottom: 4,
+    marginLeft: 8, // Reduced margin
+    marginBottom: 3, // Reduced margin
   },
   bottomText: {
-    marginTop: 10,
-    fontSize: 16,
+    marginTop: 8, // Reduced margin
+    fontSize: 14, // Reduced font size
     color: '#555',
   },
   submitButton: {
     backgroundColor: '#d32f2f',
-    padding: 20,
-    borderRadius: 8,
+    padding: 15, // Reduced padding
+    borderRadius: 6, // Reduced border radius
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 30, // Reduced margin
     justifyContent: 'center',
   },
   submitText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16, // Reduced font size
     fontWeight: 'bold',
   },
   blurContent: {
@@ -372,19 +367,19 @@ const styles = StyleSheet.create({
   },
   dots: {
     flexDirection: 'row',
-    gap: 6,
-    marginTop: 10,
+    gap: 4, // Reduced gap
+    marginTop: 8, // Reduced margin
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: 6, // Reduced size
+    height: 6, // Reduced size
     backgroundColor: '#69a1e1',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   loadingText: {
-    fontSize: 16,
+    fontSize: 14, // Reduced font size
     color: '#333',
-    marginTop: 10,
+    marginTop: 8, // Reduced margin
   },
   notificationBox: {
     position: 'absolute',
@@ -392,8 +387,8 @@ const styles = StyleSheet.create({
     left: '10%',
     right: '10%',
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 10,
+    padding: 12, // Reduced padding
+    borderRadius: 8,
     alignItems: 'center',
     zIndex: 999,
     elevation: 10,
@@ -403,14 +398,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
   },
   resultTitle: {
-    fontSize: 16,
+    fontSize: 14, // Reduced font size
     color: '#666',
-    marginBottom: 5,
+    marginBottom: 4, // Reduced margin
   },
   resultMessage: {
-    fontSize: 20,
+    fontSize: 18, // Reduced font size
     color: '#1976d2',
     fontWeight: 'bold',
   },
 });
-
